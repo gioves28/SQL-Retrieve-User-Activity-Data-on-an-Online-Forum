@@ -55,65 +55,36 @@ Olivers wants to learn how ChatData sites are being used in the real world to un
 **Q15 - Rank the days of the week from highest to lowest in terms of the volume of ViewCount as a percentage**
 
 ```sql
- select case cast (strftime('%w', CreationDate) as integer)
-  when 0 then 'Sunday'
-  when 1 then 'Monday'
-  when 2 then 'Tuesday'
-  when 3 then 'Wednesday'
-  when 4 then 'Thursday'
-  when 5 then 'Friday'
-  else 'Saturday' end as Day, ROUND(SUM(ViewCount)*100.0/(select SUM(ViewCount) from posts),2) as SumViewCountPercent
+SELECT
+CASE CAST (strftime('%w', CreationDate) AS integer)
+  WHEN 0 THEN 'SUNDAY'
+  WHEN 1 THEN 'MONDAY'
+  WHEN 2 THEN 'TUESDAY'
+  WHEN 3 THEN 'WEDNESDAY'
+  WHEN 4 THEN 'THURSDAY'
+  WHEN 5 THEN 'FRIDAY'
+ELSE 'SATURDAY' END AS DAY, ROUND(SUM(ViewCount)*100.0/(select SUM(ViewCount) from posts),2) as SumViewCountPercent
     FROM posts  
     GROUP BY Day
     ORDER BY 2 DESC
 ```
 
 
-**Q10 - In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?**
+**Q17 - Considering only the users with an "AboutMe," how many posts are there per user?**
 
 ```sql
-SELECT s.customer_id, SUM(
-    CASE 
-        WHEN s.order_date BETWEEN mb.join_date AND DATEADD(day, 7, mb.join_date) THEN m.price*20
-        WHEN m.product_name = 'sushi' THEN m.price*20 
-        ELSE m.price*10 
-    END) AS total_points
-FROM dbo.sales s
-JOIN dbo.menu m ON s.product_id = m.product_id
-LEFT JOIN dbo.members mb ON s.customer_id = mb.customer_id
-WHERE s.customer_id IN ('A', 'B') AND s.order_date <= '2021-01-31'
---WHERE s.customer_id = mb.customer_id AND s.order_date <= '2021-01-31'
-GROUP BY s.customer_id;
+WITH 
+T1 AS (SELECT COUNT(*) AS Posts
+      FROM users u
+      INNER JOIN posts p ON u.Id = p.OwnerUserId
+      WHERE u.AboutMe !=''),
+T2 AS (SELECT CAST(COUNT(*) AS FLOAT) AS Users
+      FROM users
+      WHERE AboutMe !='') 
+
+SELECT ROUND(CAST(T1.Posts/T2.Users AS FLOAT),2) "Post per Users"
+FROM T1, T2
 ```
-
-
-**Bonus Q2 - Danny also requires further information about the ranking of products. he purposely does not need the ranking of non member purchases so he expects NULL ranking values for customers who are not yet part of the loyalty program.**
-
-```sql
-WITH customers_data AS (
-  SELECT 
-    s.customer_id, s.order_date,  m.product_name, m.price,
-    CASE
-      WHEN s.order_date < mb.join_date THEN 'N'
-      WHEN s.order_date >= mb.join_date THEN 'Y'
-      ELSE 'N' END AS member
-  FROM sales s
-  LEFT JOIN members mb
-    ON s.customer_id = mb.customer_id
-  JOIN menu m
-    ON s.product_id = m.product_id
-)
-SELECT 
-  *, 
-  CASE
-    WHEN member = 'N' THEN NULL
-    ELSE RANK () OVER(
-      PARTITION BY customer_id, member
-      ORDER BY order_date) END AS ranking
-FROM customers_data
-ORDER BY customer_id, order_date;
-```
-   
 ### Insights
 
 - Customer B is the most frequent visitor with 6 visits in Jan 2021.
