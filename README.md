@@ -87,7 +87,6 @@ FROM T1, T2
 ```
 ### Insights
 
-- Customer B is the most frequent visitor with 6 visits in Jan 2021.
-- Danny’s Diner’s most popular item is ramen, followed by curry and sushi.
-- Customer A loves ramen, Customer C loves only ramen whereas Customer B seems to enjoy sushi, curry and ramen equally.
-- The last item ordered by Customers A and B before they became members are sushi and curry. Does it mean both of these items are the deciding factor?
+- 21713 Posts have 0 comments and 14061 posts have at least 1 comment.
+- There are 1900 diferrent user location and the top 5 are Germany, India, USA, France and UK.
+- Post have more views on wednesday and thursday.
